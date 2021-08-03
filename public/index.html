@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student List</title>
 </head>
+
 <body>
     <h1>Student List</h1>
     <form>
@@ -20,18 +22,34 @@
         const nameInput = document.querySelector('input');
         const container = document.querySelector('section');
 
+        function putTheThingInTheView(res) {
+            container.innerHTML = ''
+            nameInput.value = ''
+
+            res.data.forEach((studentName, index) => {
+                container.innerHTML += `<p name=${index}>${studentName}</p>`
+            })
+
+            document.querySelectorAll('p').forEach(element => {
+                const theIndexValue = element.getAttribute('name');
+
+                element.addEventListener('click', () => {
+                    axios
+                        .delete(`/api/students/${theIndexValue}`)
+                        .then(res => {
+                            putTheThingInTheView(res)
+                        })
+                })
+            })
+        }
+
         function submitHandler(evt) {
             evt.preventDefault();
 
             axios
                 .post('/api/students', { name: nameInput.value })
                 .then(res => {
-                    container.innerHTML = ''
-                    nameInput.value = ''
-
-                    res.data.forEach((studentName) => {
-                        container.innerHTML += `<p>${studentName}</p>`
-                    })
+                    putTheThingInTheView(res)
                 })
                 .catch(err => {
                     nameInput.value = ''
@@ -49,7 +67,15 @@
                 })
         }
 
+        // get student list on initial load
+        axios
+            .get('/api/students')
+            .then(res => {
+                putTheThingInTheView(res)
+            })
+
         addForm.addEventListener('submit', submitHandler)
     </script>
 </body>
+
 </html>
